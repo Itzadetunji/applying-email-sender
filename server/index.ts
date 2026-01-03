@@ -181,7 +181,7 @@ app.post("/send-email", async (req: Request, res: Response): Promise<any> => {
 
 	for (const email of emails) {
 		const mailOptions = {
-			from: process.env.EMAIL_USER,
+			from: `"Adetunji" <${process.env.EMAIL_USER}>`,
 			to: email,
 			subject: getEmailSubject(type, company),
 			html: getEmailBody(type, name, company),

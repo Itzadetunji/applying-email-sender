@@ -25,8 +25,32 @@ const Popup = () => {
 	};
 
 	useEffect(() => {
+		const saved = localStorage.getItem("emailSenderState");
+		if (saved) {
+			try {
+				setFormData(JSON.parse(saved));
+			} catch (e) {
+				console.error(e);
+			}
+		}
 		checkServer();
 	}, []);
+
+	useEffect(() => {
+		localStorage.setItem("emailSenderState", JSON.stringify(formData));
+	}, [formData]);
+
+	const handleClear = () => {
+		setFormData({
+			name: "",
+			emails: "",
+			company: "",
+			type: "opportunity_saw",
+		});
+		setResult(null);
+		setError(null);
+		localStorage.removeItem("emailSenderState");
+	};
 
 	const handleChange = (
 		e: React.ChangeEvent<
@@ -172,17 +196,26 @@ const Popup = () => {
 					</select>
 				</div>
 
-				<button
-					type="submit"
-					disabled={loading || serverStatus !== "Server is running"}
-					className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-						loading || serverStatus !== "Server is running"
-							? "bg-gray-400 cursor-not-allowed"
-							: "bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-					}`}
-				>
-					{loading ? "Sending..." : "Send Emails"}
-				</button>
+				<div className="flex gap-2">
+					<button
+						type="button"
+						onClick={handleClear}
+						className="w-1/3 flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+					>
+						Clear
+					</button>
+					<button
+						type="submit"
+						disabled={loading || serverStatus !== "Server is running"}
+						className={`w-2/3 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+							loading || serverStatus !== "Server is running"
+								? "bg-gray-400 cursor-not-allowed"
+								: "bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+						}`}
+					>
+						{loading ? "Sending..." : "Send Emails"}
+					</button>
+				</div>
 			</form>
 
 			{error && (
