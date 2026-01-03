@@ -95,7 +95,7 @@ const getLoveTheirWorkBody = (name: string, company: string) => {
 const getWaysToAddToTeamBody = (name: string, company: string) => {
 	return `<p>Hey ${name},</p>
 <p>I know you're really busy, and I would love to just have 30 seconds of your time.</p>
-<p>My name is Adetunji Adeyinka. I am a software engineer with 5 years of experience and here are three ways I can add to your teamm at ${company}</p>
+<p>My name is Adetunji Adeyinka. I am a software engineer with 5 years of experience and here are three ways I can add to your team at ${company}.</p>
 <ol>
 <li>I am a full-stack developer with experience building systems</li>
 <li>I am a cross-path problem solver, and if there is a need for me to jump on a different stack to solve an issue, I am available</li>
