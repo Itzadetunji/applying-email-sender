@@ -1,0 +1,29 @@
+{
+	"name": "bun-react-template",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "tsc -b && NODE_ENV=development vite build --watch ",
+		"preview": "vite preview"
+	},
+	"dependencies": {
+		"@vitejs/plugin-react": "^5.1.1",
+		"axios": "^1.13.2",
+		"react": "^19",
+		"react-dom": "^19"
+	},
+	"devDependencies": {
+		"@crxjs/vite-plugin": "^2.2.1",
+		"@tailwindcss/vite": "^4.1.18",
+		"@types/bun": "latest",
+		"@types/chrome": "^0.1.28",
+		"@types/node": "^24.10.1",
+		"@types/react": "^19",
+		"@types/react-dom": "^19",
+		"hot-reload-extension-vite": "^1.0.13",
+		"typescript": "^5.9.3",
+		"vite-plugin-static-copy": "^3.1.4"
+	}
+}
