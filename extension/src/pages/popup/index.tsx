@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
-import ReactDOM from "react-dom/client";
 import axios from "axios";
+import type React from "react";
+import { useEffect, useState } from "react";
+import ReactDOM from "react-dom/client";
 import "../../style.css";
 
 const Popup = () => {
