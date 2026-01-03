@@ -136,9 +136,9 @@ const getEmailSubject = (type: string, _company: string) => {
 		case "opportunity_saw":
 			return `30 seconds of your time is all I need`;
 		case "love_their_work":
-			return `30 seconds of your time is all I need`;
+			return `I love your work at ${_company}`;
 		case "ways_to_add_to_team":
-			return `30 seconds of your time is all I need`;
+			return `3 ways I can add to your team`;
 		default:
 			return `30 seconds of your time is all I need`;
 	}
