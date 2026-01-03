@@ -78,8 +78,8 @@ Resume: <a href="https://www.icloud.com/iclouddrive/0806AErjem_6L2sfJhxX6qD0g#Ad
 
 const getLoveTheirWorkBody = (name: string, company: string) => {
 	return `<p>Hey ${name},</p>
-<p>I know you’re really busy, and I would love to just have 30 seconds of your time.</p>
-<p>I have been following your work at ${company}, and I really love what the company does and it’s approach in solving a real need in tech which I resonate with and I would love to be part of such a dynamic team.</p>
+<p>I know you're really busy, and I would love to just have 30 seconds of your time.</p>
+<p>I have been following your work at ${company}, and I really love what the company does and it's approach in solving a real need in tech which I resonate with and I would love to be part of such a dynamic team.</p>
 <p>I am able to move within technologies, as I have experience in full-stack web development and mobile development.</p>
 <p>I have worked on</p>
 <ul>
@@ -94,7 +94,7 @@ const getLoveTheirWorkBody = (name: string, company: string) => {
 
 const getWaysToAddToTeamBody = (name: string, company: string) => {
 	return `<p>Hey ${name},</p>
-<p>I know you’re really busy, and I would love to just have 30 seconds of your time.</p>
+<p>I know you're really busy, and I would love to just have 30 seconds of your time.</p>
 <p>My name is Adetunji Adeyinka. I am a software engineer with 5 years of experience and here are three ways I can add to your teamm at ${company}</p>
 <ol>
 <li>I am a full-stack developer with experience building systems</li>
