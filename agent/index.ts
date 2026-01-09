@@ -152,9 +152,14 @@ const findEmail = async (name: string, domain: string) => {
 			},
 		);
 
-		if (response.data && response.data.email) {
-			console.log(`Found email: ${response.data.email}`);
-			return response.data.email;
+		if (response.data) {
+			const email =
+				response.data.email ||
+				(response.data.contact && response.data.contact.email);
+			if (email) {
+				console.log(`Found email: ${email}`);
+				return email;
+			}
 		}
 		return null;
 	} catch (error: any) {
@@ -180,14 +185,28 @@ const main = async () => {
 		skip_empty_lines: true,
 	});
 
-	// Get last 3 rows. The user said "start from the last row", "do the first 3 from the bottom".
-	// This probably means processing them in reverse order starting from the end.
-	const companiesToProcess = records.slice(-3).reverse();
+	// Get limit from arg, default 3.
+	const limit = process.argv[2] ? parseInt(process.argv[2]) : 3;
+	let processedCount = 0;
 
-	console.log(`Processing ${companiesToProcess.length} companies...`);
+	console.log(
+		`Processing companies from the top (Limit: ${limit} active/valid)...`,
+	);
 
-	for (const company of companiesToProcess) {
+	for (const company of records) {
+		if (processedCount >= limit) {
+			console.log(`Reached limit of ${limit} processed companies.`);
+			break;
+		}
+
 		console.log(`\n--- Processing ${company.Company} ---`);
+
+        // Check if exists in DB
+        const existing = await db.get("SELECT id FROM leads WHERE company_name = ?", [company.Company]);
+        if (existing) {
+            console.log(`Skipping ${company.Company}: Already processed.`);
+            continue;
+        }
 
 		// Check Status
 		// User: "make sure to check if they are still active or have not been acuired - Acquired & Inactive "
@@ -198,6 +217,8 @@ const main = async () => {
 			console.log(`Skipping ${company.Company}: Status is ${status}`);
 			continue;
 		}
+
+		processedCount++;
 
 		// 1. Find Founder
 		const founder = await findFounder(company);
@@ -216,39 +237,50 @@ const main = async () => {
 		// 2. Find Email
 		const email = await findEmail(founder.name, domain);
 
+		if (!email) {
+			console.log(
+				`No email found for ${founder.name}. Skipping database entry.`,
+			);
+			continue;
+		}
+
 		// 3. Generate Messages & Store
 		const emailTypes = ["love_their_work", "ways_to_add_to_team"];
+		const selectedType =
+			emailTypes[Math.floor(Math.random() * emailTypes.length)];
+		console.log(`Selected email type: ${selectedType}`);
 
-		for (const type of emailTypes) {
-			let body = "";
-			if (type === "love_their_work") {
-				body = getLoveTheirWorkBody(founder.name, company.Company);
-			} else {
-				body = getWaysToAddToTeamBody(founder.name, company.Company);
-			}
+		// Use first name for email body
+		const firstName = founder.name.split(" ")[0];
 
-			// Store in DB
-			try {
-				await db.run(
-					`INSERT INTO leads (
-                        company_name, company_website, founder_name, founder_linkedin, 
-                        founder_email, email_type, generated_email_body, status
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-					[
-						company.Company,
-						company.Website,
-						founder.name,
-						founder.link,
-						email || "NOT_FOUND",
-						type,
-						body,
-						email ? "READY" : "MISSING_EMAIL",
-					],
-				);
-				console.log(`Saved lead for ${company.Company} [${type}]`);
-			} catch (err) {
-				console.error("Error saving to DB:", err);
-			}
+		let body = "";
+		if (selectedType === "love_their_work") {
+			body = getLoveTheirWorkBody(firstName, company.Company);
+		} else {
+			body = getWaysToAddToTeamBody(firstName, company.Company);
+		}
+
+		// Store in DB
+		try {
+			await db.run(
+				`INSERT INTO leads (
+                    company_name, company_website, founder_name, founder_linkedin, 
+                    founder_email, email_type, generated_email_body, status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+				[
+					company.Company,
+					company.Website,
+					founder.name,
+					founder.link,
+					email,
+					selectedType,
+					body,
+					"READY",
+				],
+			);
+			console.log(`Saved lead for ${company.Company} [${selectedType}]`);
+		} catch (err) {
+			console.error("Error saving to DB:", err);
 		}
 	}
 };

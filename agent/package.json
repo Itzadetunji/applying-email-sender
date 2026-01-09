@@ -11,11 +11,13 @@
   },
   "dependencies": {
     "@types/morgan": "^1.9.10",
+    "@types/nodemailer": "^7.0.4",
     "@types/sqlite3": "^5.1.0",
     "axios": "^1.13.2",
     "csv-parse": "^6.1.0",
     "dotenv": "^17.2.3",
     "morgan": "^1.10.1",
+    "nodemailer": "^7.0.12",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7"
   }
