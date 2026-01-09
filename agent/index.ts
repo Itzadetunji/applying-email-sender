@@ -10,28 +10,28 @@ dotenv.config();
 
 // Define types for Company
 interface Company {
-  Company: string;
-  Website: string;
-  "One line": string;
-  Size: string;
-  Sector: string;
-  Batch: string;
-  Status: string;
-  Tags: string;
+	Company: string;
+	Website: string;
+	"One line": string;
+	Size: string;
+	Sector: string;
+	Batch: string;
+	Status: string;
+	Tags: string;
 }
 
 // Database setup
 let db: Database;
 
 const initDb = async () => {
-    try {
-        db = await open({
-            filename: "./agent_emails.db",
-            driver: sqlite3.Database,
-        });
+	try {
+		db = await open({
+			filename: "./agent_emails.db",
+			driver: sqlite3.Database,
+		});
 
-        // Replicating server DB structure, adding fields for found data
-        await db.exec(`
+		// Replicating server DB structure, adding fields for found data
+		await db.exec(`
       CREATE TABLE IF NOT EXISTS leads (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         company_name TEXT,
@@ -46,15 +46,15 @@ const initDb = async () => {
         error_message TEXT
       )
     `);
-        console.log("Connected to SQLite database");
-    } catch (error) {
-        console.error("Error connecting to database:", error);
-    }
+		console.log("Connected to SQLite database");
+	} catch (error) {
+		console.error("Error connecting to database:", error);
+	}
 };
 
 // Email Templates (Copied and adapted from server)
 const getLoveTheirWorkBody = (name: string, company: string) => {
-    return `<p>Hey ${name},</p>
+	return `<p>Hey ${name},</p>
 <p>I know you're really busy, and I would love to just have 30 seconds of your time.</p>
 <p>I have been following your work at ${company}, and I really love what the company does and it's approach in solving a real need in tech which I resonate with and I would love to be part of such a dynamic team.</p>
 <p>I am able to move within technologies, as I have experience in full-stack web development and mobile development.</p>
@@ -70,7 +70,7 @@ const getLoveTheirWorkBody = (name: string, company: string) => {
 };
 
 const getWaysToAddToTeamBody = (name: string, company: string) => {
-    return `<p>Hey ${name},</p>
+	return `<p>Hey ${name},</p>
 <p>I know you're really busy, and I would love to just have 30 seconds of your time.</p>
 <p>My name is Adetunji Adeyinka. I am a software engineer with 5 years of experience and here are three ways I can add to your team at ${company}.</p>
 <ol>
@@ -93,151 +93,164 @@ Resume: <a href="https://www.icloud.com/iclouddrive/0806AErjem_6L2sfJhxX6qD0g#Ad
 
 // Step 1: Serper Search
 const findFounder = async (company: Company) => {
-    const query = `site:linkedin.com/in (engineer OR developer OR CTO) ${company.Website}`;
-    console.log(`Searching for founder of ${company.Company} with query: ${query}`);
-    
-    try {
-        const response = await axios.post("https://google.serper.dev/search", {
-            q: query
-        }, {
-            headers: {
-                "X-API-KEY": process.env.SERPER_API_KEY,
-                "Content-Type": "application/json"
-            }
-        });
+	const query = `site:linkedin.com/in (engineer OR developer OR CTO) ${company.Website}`;
+	console.log(
+		`Searching for founder of ${company.Company} with query: ${query}`,
+	);
 
-        if (response.data.organic && response.data.organic.length > 0) {
-            // Try to extract name from title
-            // Title format usually: "Name - Title - Company | LinkedIn"
-            const firstResult = response.data.organic[0];
-            const title = firstResult.title;
-            const link = firstResult.link;
-            
-            // Basic heuristic to get name: Take string before " - " or " | "
-            const namePart = title.split(" - ")[0].split(" | ")[0];
-            // Clean up name part (remove credentials like PHD, etc if simple)
-            const cleanName = namePart.trim();
+	try {
+		const response = await axios.post(
+			"https://google.serper.dev/search",
+			{
+				q: query,
+			},
+			{
+				headers: {
+					"X-API-KEY": process.env.SERPER_API_KEY,
+					"Content-Type": "application/json",
+				},
+			},
+		);
 
-            console.log(`Found potential founder: ${cleanName} (${link})`);
-            return { name: cleanName, link: link };
-        }
-        return null;
-    } catch (error: any) {
-        console.error(`Error searching for ${company.Company}:`, error.message);
-        return null;
-    }
+		if (response.data.organic && response.data.organic.length > 0) {
+			// Try to extract name from title
+			// Title format usually: "Name - Title - Company | LinkedIn"
+			const firstResult = response.data.organic[0];
+			const title = firstResult.title;
+			const link = firstResult.link;
+
+			// Basic heuristic to get name: Take string before " - " or " | "
+			const namePart = title.split(" - ")[0].split(" | ")[0];
+			// Clean up name part (remove credentials like PHD, etc if simple)
+			const cleanName = namePart.trim();
+
+			console.log(`Found potential founder: ${cleanName} (${link})`);
+			return { name: cleanName, link: link };
+		}
+		return null;
+	} catch (error: any) {
+		console.error(`Error searching for ${company.Company}:`, error.message);
+		return null;
+	}
 };
 
 // Step 2: Findymail Search
 const findEmail = async (name: string, domain: string) => {
-    console.log(`Finding email for ${name} @ ${domain}`);
-    try {
-        const response = await axios.post("https://app.findymail.com/api/search/name", {
-            name: name,
-            domain: domain
-        }, {
-            headers: {
-                "Authorization": `Bearer ${process.env.FINDY_API_KEY}`,
-                "Content-Type": "application/json"
-            }
-        });
+	console.log(`Finding email for ${name} @ ${domain}`);
+	try {
+		const response = await axios.post(
+			"https://app.findymail.com/api/search/name",
+			{
+				name: name,
+				domain: domain,
+			},
+			{
+				headers: {
+					Authorization: `Bearer ${process.env.FINDY_API_KEY}`,
+					"Content-Type": "application/json",
+				},
+			},
+		);
 
-        if (response.data && response.data.email) {
-            console.log(`Found email: ${response.data.email}`);
-            return response.data.email;
-        }
-        return null;
-    } catch (error: any) {
-        // Findymail might return 404 or other errors if not found
-        console.error(`Error finding email for ${name}:`, error.message);
-        return null;
-    }
+		if (response.data && response.data.email) {
+			console.log(`Found email: ${response.data.email}`);
+			return response.data.email;
+		}
+		return null;
+	} catch (error: any) {
+		// Findymail might return 404 or other errors if not found
+		console.error(`Error finding email for ${name}:`, error.message);
+		return null;
+	}
 };
 
 // Main Process
 const main = async () => {
-    if (!process.env.SERPER_API_KEY || !process.env.FINDY_API_KEY) {
-        console.error("Missing SERPER_API_KEY or FINDY_API_KEY in .env");
-        process.exit(1); 
-    }
+	if (!process.env.SERPER_API_KEY || !process.env.FINDY_API_KEY) {
+		console.error("Missing SERPER_API_KEY or FINDY_API_KEY in .env");
+		process.exit(1);
+	}
 
-    await initDb();
+	await initDb();
 
-    // Read CSV
-    const csvContent = fs.readFileSync("./companies.csv", "utf-8");
-    const records: Company[] = parse(csvContent, {
-        columns: true,
-        skip_empty_lines: true
-    });
+	// Read CSV
+	const csvContent = fs.readFileSync("./companies.csv", "utf-8");
+	const records: Company[] = parse(csvContent, {
+		columns: true,
+		skip_empty_lines: true,
+	});
 
-    // Get last 3 rows. The user said "start from the last row", "do the first 3 from the bottom".
-    // This probably means processing them in reverse order starting from the end.
-    const companiesToProcess = records.slice(-3).reverse(); 
-    
-    console.log(`Processing ${companiesToProcess.length} companies...`);
+	// Get last 3 rows. The user said "start from the last row", "do the first 3 from the bottom".
+	// This probably means processing them in reverse order starting from the end.
+	const companiesToProcess = records.slice(-3).reverse();
 
-    for (const company of companiesToProcess) {
-        console.log(`\n--- Processing ${company.Company} ---`);
-        
-        // Check Status
-        // User: "make sure to check if they are still active or have not been acuired - Acquired & Inactive "
-        // Logic: if status is NOT active, skip. Or if it IS Inactive or Acquired, skip.
-        // The check should pass if they ARE active and NOT acquired.
-        const status = company.Status || "";
-        if (status === "Inactive" || status.includes("Acquired")) {
-            console.log(`Skipping ${company.Company}: Status is ${status}`);
-            continue;
-        }
+	console.log(`Processing ${companiesToProcess.length} companies...`);
 
-        // 1. Find Founder
-        const founder = await findFounder(company);
-        if (!founder) {
-            console.log("No founder found. Skipping.");
-            continue;
-        }
+	for (const company of companiesToProcess) {
+		console.log(`\n--- Processing ${company.Company} ---`);
 
-        // Clean domain from website URL
-        let domain = company.Website.replace(/^https?:\/\//, "").replace(/^www\./, "");
-        domain = domain.split('/')[0]; // simple domain extraction
+		// Check Status
+		// User: "make sure to check if they are still active or have not been acuired - Acquired & Inactive "
+		// Logic: if status is NOT active, skip. Or if it IS Inactive or Acquired, skip.
+		// The check should pass if they ARE active and NOT acquired.
+		const status = company.Status || "";
+		if (status === "Inactive" || status.includes("Acquired")) {
+			console.log(`Skipping ${company.Company}: Status is ${status}`);
+			continue;
+		}
 
-        // 2. Find Email
-        const email = await findEmail(founder.name, domain);
-        
-        // 3. Generate Messages & Store
-        const emailTypes = ["love_their_work", "ways_to_add_to_team"];
-        
-        for (const type of emailTypes) {
-            let body = "";
-            if (type === "love_their_work") {
-                body = getLoveTheirWorkBody(founder.name, company.Company);
-            } else {
-                body = getWaysToAddToTeamBody(founder.name, company.Company);
-            }
+		// 1. Find Founder
+		const founder = await findFounder(company);
+		if (!founder) {
+			console.log("No founder found. Skipping.");
+			continue;
+		}
 
-            // Store in DB
-            try {
-                await db.run(
-                    `INSERT INTO leads (
+		// Clean domain from website URL
+		let domain = company.Website.replace(/^https?:\/\//, "").replace(
+			/^www\./,
+			"",
+		);
+		domain = domain.split("/")[0]; // simple domain extraction
+
+		// 2. Find Email
+		const email = await findEmail(founder.name, domain);
+
+		// 3. Generate Messages & Store
+		const emailTypes = ["love_their_work", "ways_to_add_to_team"];
+
+		for (const type of emailTypes) {
+			let body = "";
+			if (type === "love_their_work") {
+				body = getLoveTheirWorkBody(founder.name, company.Company);
+			} else {
+				body = getWaysToAddToTeamBody(founder.name, company.Company);
+			}
+
+			// Store in DB
+			try {
+				await db.run(
+					`INSERT INTO leads (
                         company_name, company_website, founder_name, founder_linkedin, 
                         founder_email, email_type, generated_email_body, status
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [
-                        company.Company, 
-                        company.Website, 
-                        founder.name, 
-                        founder.link, 
-                        email || "NOT_FOUND", 
-                        type, 
-                        body,
-                        email ? "READY" : "MISSING_EMAIL"
-                    ]
-                );
-                console.log(`Saved lead for ${company.Company} [${type}]`);
-            } catch (err) {
-                console.error("Error saving to DB:", err);
-            }
-        }
-    }
+					[
+						company.Company,
+						company.Website,
+						founder.name,
+						founder.link,
+						email || "NOT_FOUND",
+						type,
+						body,
+						email ? "READY" : "MISSING_EMAIL",
+					],
+				);
+				console.log(`Saved lead for ${company.Company} [${type}]`);
+			} catch (err) {
+				console.error("Error saving to DB:", err);
+			}
+		}
+	}
 };
 
 main();
