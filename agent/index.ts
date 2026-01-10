@@ -201,12 +201,15 @@ const main = async () => {
 
 		console.log(`\n--- Processing ${company.Company} ---`);
 
-        // Check if exists in DB
-        const existing = await db.get("SELECT id FROM leads WHERE company_name = ?", [company.Company]);
-        if (existing) {
-            console.log(`Skipping ${company.Company}: Already processed.`);
-            continue;
-        }
+		// Check if exists in DB
+		const existing = await db.get(
+			"SELECT id FROM leads WHERE company_name = ?",
+			[company.Company],
+		);
+		if (existing) {
+			console.log(`Skipping ${company.Company}: Already processed.`);
+			continue;
+		}
 
 		// Check Status
 		// User: "make sure to check if they are still active or have not been acuired - Acquired & Inactive "

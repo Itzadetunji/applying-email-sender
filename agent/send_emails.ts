@@ -53,7 +53,7 @@ const sendEmails = async () => {
 			await db.run("UPDATE leads SET status = 'SKIPPED' WHERE id = ?", [
 				lead.id,
 			]);
-            console.log("");
+			console.log("");
 			continue;
 		}
 
@@ -78,7 +78,7 @@ const sendEmails = async () => {
 				[error.message, lead.id],
 			);
 		}
-        console.log("");
+		console.log("");
 	}
 };
 
